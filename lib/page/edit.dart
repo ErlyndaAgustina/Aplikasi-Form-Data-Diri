@@ -4,50 +4,96 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
-import 'package:lottie/lottie.dart';
 import 'dart:io';
 import 'dart:async';
 
-class FormPage extends StatefulWidget {
-  const FormPage({super.key});
+class EditPage extends StatefulWidget {
+  final Map<String, dynamic> siswa;
+
+  const EditPage({super.key, required this.siswa});
 
   @override
-  State<FormPage> createState() => _FormPageState();
+  State<EditPage> createState() => _EditPageState();
 }
 
-class _FormPageState extends State<FormPage> {
+class _EditPageState extends State<EditPage> {
   int _currentStep = 0;
 
-  // Controllers for form fields
-  final _nisnController = TextEditingController();
-  final _namaController = TextEditingController();
-  String? _jenisKelamin;
-  String? _agama;
-  final _tempatLahirController = TextEditingController();
-  final _tanggalLahirController = TextEditingController();
-  final _noHpController = TextEditingController();
-  final _nikController = TextEditingController();
-
-  final _jalanController = TextEditingController();
-  final _rtRwController = TextEditingController();
-  final _dusunController = TextEditingController();
-  final _desaController = TextEditingController();
-  final _kecamatanController = TextEditingController();
-  final _kabupatenController = TextEditingController();
-  final _provinsiController = TextEditingController();
-  final _kodePosController = TextEditingController();
-
-  final _ayahController = TextEditingController();
-  final _ibuController = TextEditingController();
-  final _waliController = TextEditingController();
-  final _alamatWaliJalanController = TextEditingController();
-  final _alamatWaliRtRwController = TextEditingController();
-  final _alamatWaliDusunController = TextEditingController();
-  final _alamatWaliDesaController = TextEditingController();
-  final _alamatWaliKecamatanController = TextEditingController();
-  final _alamatWaliKabupatenController = TextEditingController();
-  final _alamatWaliProvinsiController = TextEditingController();
-  final _alamatWaliKodePosController = TextEditingController();
+  late final _nisnController = TextEditingController(
+    text: widget.siswa['nisn'],
+  );
+  late final _namaController = TextEditingController(
+    text: widget.siswa['nama'],
+  );
+  late String? _jenisKelamin = widget.siswa['jenis_kelamin'];
+  late String? _agama = widget.siswa['agama'];
+  late final _tempatLahirController = TextEditingController(
+    text: widget.siswa['ttl']?.split(', ')[0] ?? '',
+  );
+  late final _tanggalLahirController = TextEditingController(
+    text: widget.siswa['ttl']?.split(', ')[1] ?? '',
+  );
+  late final _noHpController = TextEditingController(
+    text: widget.siswa['no_hp'],
+  );
+  late final _nikController = TextEditingController(text: widget.siswa['nik']);
+  late final _jalanController = TextEditingController(
+    text: widget.siswa['jalan'],
+  );
+  late final _rtRwController = TextEditingController(
+    text: widget.siswa['rt_rw'],
+  );
+  late final _dusunController = TextEditingController(
+    text: widget.siswa['dusun'],
+  );
+  late final _desaController = TextEditingController(
+    text: widget.siswa['desa'],
+  );
+  late final _kecamatanController = TextEditingController(
+    text: widget.siswa['kecamatan'],
+  );
+  late final _kabupatenController = TextEditingController(
+    text: widget.siswa['kabupaten'],
+  );
+  late final _provinsiController = TextEditingController(
+    text: widget.siswa['provinsi'],
+  );
+  late final _kodePosController = TextEditingController(
+    text: widget.siswa['kode_pos'],
+  );
+  late final _ayahController = TextEditingController(
+    text: widget.siswa['wali']?['nama_ayah'] ?? '',
+  );
+  late final _ibuController = TextEditingController(
+    text: widget.siswa['wali']?['nama_ibu'] ?? '',
+  );
+  late final _waliController = TextEditingController(
+    text: widget.siswa['wali']?['nama_wali'] ?? '',
+  );
+  late final _alamatWaliJalanController = TextEditingController(
+    text: widget.siswa['wali']?['jalan'] ?? '',
+  );
+  late final _alamatWaliRtRwController = TextEditingController(
+    text: widget.siswa['wali']?['rt_rw'] ?? '',
+  );
+  late final _alamatWaliDusunController = TextEditingController(
+    text: widget.siswa['wali']?['dusun'] ?? '',
+  );
+  late final _alamatWaliDesaController = TextEditingController(
+    text: widget.siswa['wali']?['desa'] ?? '',
+  );
+  late final _alamatWaliKecamatanController = TextEditingController(
+    text: widget.siswa['wali']?['kecamatan'] ?? '',
+  );
+  late final _alamatWaliKabupatenController = TextEditingController(
+    text: widget.siswa['wali']?['kabupaten'] ?? '',
+  );
+  late final _alamatWaliProvinsiController = TextEditingController(
+    text: widget.siswa['wali']?['provinsi'] ?? '',
+  );
+  late final _alamatWaliKodePosController = TextEditingController(
+    text: widget.siswa['wali']?['kode_pos'] ?? '',
+  );
 
   List<Map<String, dynamic>> _dusunList = [];
 
@@ -65,10 +111,13 @@ class _FormPageState extends State<FormPage> {
   Future<void> _fetchDusun() async {
     bool isConnected = await _checkInternetConnection();
     if (!isConnected) {
-      _showErrorDialog(
-        title: 'Tidak Ada Koneksi Internet',
-        message: 'Silakan periksa jaringan Anda dan coba lagi.',
-        lottieAsset: 'assets/animations/no_internet.json',
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Tidak ada koneksi internet. Silakan periksa jaringan Anda.',
+          ),
+          backgroundColor: Colors.red,
+        ),
       );
       return;
     }
@@ -85,104 +134,27 @@ class _FormPageState extends State<FormPage> {
           ...kalipare.map((item) => {...item, 'table': 'alamat_kalipare'}),
           ...selorejo.map((item) => {...item, 'table': 'alamat_selorejo'}),
           ...kromengan.map((item) => {...item, 'table': 'alamat_kromengan'}),
-          ...sumberpucung.map((item) => {...item, 'table': 'alamat_sumberpucung'}),
+          ...sumberpucung.map(
+            (item) => {...item, 'table': 'alamat_sumberpucung'},
+          ),
         ];
       });
 
       if (_dusunList.isEmpty) {
-        _showErrorDialog(
-          title: 'Error',
-          message: 'Tidak ada data dusun.',
-          lottieAsset: 'assets/animations/server_error.json',
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Tidak ada data dusun.')));
       }
     } catch (e) {
-      String errorMessage = 'Gagal terhubung ke Database. Silahkan periksa koneksi server.';
-      String lottieAsset = 'assets/animations/server_error.json';
+      String errorMessage = 'Gagal mengambil data dusun: $e';
       if (e is SocketException || e is TimeoutException) {
-        errorMessage = 'Gagal terhubung ke Supabase. Silakan periksa koneksi server.';
+        errorMessage =
+            'Gagal terhubung ke Supabase. Silakan periksa koneksi server.';
       }
-      _showErrorDialog(
-        title: 'Koneksi Database Gagal',
-        message: errorMessage,
-        lottieAsset: lottieAsset,
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(errorMessage), backgroundColor: Colors.red),
       );
     }
-  }
-
-  Future<void> _showErrorDialog({
-    required String title,
-    required String message,
-    required String lottieAsset,
-  }) async {
-    await showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        backgroundColor: Colors.white,
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Lottie.asset(
-              lottieAsset,
-              width: 150,
-              height: 150,
-              fit: BoxFit.contain,
-            ),
-            const SizedBox(height: 16),
-            Text(
-              title,
-              style: GoogleFonts.poppins(
-                fontSize: 20,
-                fontWeight: FontWeight.w600,
-                color: Colors.black87,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              message,
-              style: GoogleFonts.poppins(fontSize: 14, color: Colors.black54),
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(
-              'Tutup',
-              style: GoogleFonts.poppins(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: const Color(0xFF95BB72),
-              ),
-            ),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF95BB72),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-            onPressed: () {
-              Navigator.pop(context);
-              _fetchDusun();
-            },
-            child: Text(
-              'Coba Lagi',
-              style: GoogleFonts.poppins(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: Colors.white,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
   }
 
   Future<void> _selectDate() async {
@@ -216,70 +188,43 @@ class _FormPageState extends State<FormPage> {
 
   String? _validateInputs() {
     final nisn = _nisnController.text.trim();
-    if (nisn.isEmpty) {
-      return 'NISN harus diisi!';
-    }
-    if (nisn.length != 10) {
-      return 'NISN harus terdiri dari 10 karakter!';
-    }
-    if (!RegExp(r'^\d{10}$').hasMatch(nisn)) {
+    if (nisn.isEmpty) return 'NISN harus diisi!';
+    if (nisn.length != 10) return 'NISN harus terdiri dari 10 karakter!';
+    if (!RegExp(r'^\d{10}$').hasMatch(nisn))
       return 'NISN hanya boleh berisi angka!';
-    }
 
-    if (_namaController.text.trim().isEmpty) {
-      return 'Nama Lengkap harus diisi!';
-    }
-    if (_jenisKelamin == null) {
-      return 'Jenis Kelamin harus dipilih!';
-    }
-    if (_agama == null) {
-      return 'Agama harus dipilih!';
-    }
-    if (_tempatLahirController.text.trim().isEmpty) {
+    if (_namaController.text.trim().isEmpty) return 'Nama Lengkap harus diisi!';
+    if (_jenisKelamin == null) return 'Jenis Kelamin harus dipilih!';
+    if (_agama == null) return 'Agama harus dipilih!';
+    if (_tempatLahirController.text.trim().isEmpty)
       return 'Tempat Lahir harus diisi!';
-    }
-    if (_tanggalLahirController.text.trim().isEmpty) {
+    if (_tanggalLahirController.text.trim().isEmpty)
       return 'Tanggal Lahir harus diisi!';
-    }
+
     final noHp = _noHpController.text.trim();
-    if (noHp.isEmpty) {
-      return 'No. Tlp/HP harus diisi!';
-    }
-    if (noHp.length < 12 || noHp.length > 15) {
+    if (noHp.isEmpty) return 'No. Tlp/HP harus diisi!';
+    if (noHp.length < 12 || noHp.length > 15)
       return 'No. Tlp/HP harus terdiri dari 12 hingga 15 karakter!';
-    }
-    if (!RegExp(r'^\d+$').hasMatch(noHp)) {
+    if (!RegExp(r'^\d+$').hasMatch(noHp))
       return 'No. Tlp/HP hanya boleh berisi angka!';
-    }
+
     final nik = _nikController.text.trim();
-    if (nik.isEmpty) {
-      return 'NIK harus diisi!';
-    }
-    if (nik.length != 16) {
-      return 'NIK harus terdiri dari 16 karakter!';
-    }
-    if (!RegExp(r'^\d{16}$').hasMatch(nik)) {
+    if (nik.isEmpty) return 'NIK harus diisi!';
+    if (nik.length != 16) return 'NIK harus terdiri dari 16 karakter!';
+    if (!RegExp(r'^\d{16}$').hasMatch(nik))
       return 'NIK hanya boleh berisi angka!';
-    }
-    if (_jalanController.text.trim().isEmpty) {
-      return 'Jalan harus diisi!';
-    }
-    if (_rtRwController.text.trim().isEmpty) {
-      return 'RT/RW harus diisi!';
-    }
-    if (!RegExp(r'^\d{3}/\d{3}$').hasMatch(_rtRwController.text.trim())) {
+
+    if (_jalanController.text.trim().isEmpty) return 'Jalan harus diisi!';
+    if (_rtRwController.text.trim().isEmpty) return 'RT/RW harus diisi!';
+    if (!RegExp(r'^\d{3}/\d{3}$').hasMatch(_rtRwController.text.trim()))
       return 'RT/RW harus dalam format 001/002 dan hanya berisi angka!';
-    }
-    if (_ayahController.text.trim().isEmpty) {
-      return 'Nama Ayah harus diisi!';
-    }
-    if (_ibuController.text.trim().isEmpty) {
-      return 'Nama Ibu harus diisi!';
-    }
+
+    if (_ayahController.text.trim().isEmpty) return 'Nama Ayah harus diisi!';
+    if (_ibuController.text.trim().isEmpty) return 'Nama Ibu harus diisi!';
     return null;
   }
 
-  Future<void> _simpanData() async {
+  Future<void> _updateData() async {
     final validationError = _validateInputs();
     if (validationError != null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -290,10 +235,13 @@ class _FormPageState extends State<FormPage> {
 
     bool isConnected = await _checkInternetConnection();
     if (!isConnected) {
-      _showErrorDialog(
-        title: 'Tidak Ada Koneksi Internet',
-        message: 'Silakan periksa jaringan Anda dan coba lagi.',
-        lottieAsset: 'assets/animations/no_internet.json',
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Tidak ada koneksi internet. Silakan periksa jaringan Anda.',
+          ),
+          backgroundColor: Colors.red,
+        ),
       );
       return;
     }
@@ -321,12 +269,21 @@ class _FormPageState extends State<FormPage> {
           'rt_rw': _rtRwController.text.trim(),
         };
 
-        final alamatMasterResponseSiswa = await supabase
-            .from('alamat_master')
-            .insert(alamatMasterDataSiswa)
-            .select('id')
-            .single();
-        alamatIdSiswa = alamatMasterResponseSiswa['id'];
+        final existingAlamatId = widget.siswa['alamat_id'];
+        if (existingAlamatId != null) {
+          await supabase
+              .from('alamat_master')
+              .update(alamatMasterDataSiswa)
+              .eq('id', existingAlamatId);
+          alamatIdSiswa = existingAlamatId;
+        } else {
+          final alamatMasterResponseSiswa = await supabase
+              .from('alamat_master')
+              .insert(alamatMasterDataSiswa)
+              .select('id')
+              .single();
+          alamatIdSiswa = alamatMasterResponseSiswa['id'];
+        }
       }
 
       final selectedDusunWali = _dusunList.firstWhere(
@@ -349,35 +306,60 @@ class _FormPageState extends State<FormPage> {
           'rt_rw': _alamatWaliRtRwController.text.trim(),
         };
 
-        final alamatMasterResponseWali = await supabase
-            .from('alamat_master')
-            .insert(alamatMasterDataWali)
-            .select('id')
-            .single();
-        alamatIdWali = alamatMasterResponseWali['id'];
+        final existingWaliAlamatId = widget.siswa['wali']?['alamat_id'];
+        if (existingWaliAlamatId != null) {
+          await supabase
+              .from('alamat_master')
+              .update(alamatMasterDataWali)
+              .eq('id', existingWaliAlamatId);
+          alamatIdWali = existingWaliAlamatId;
+        } else {
+          final alamatMasterResponseWali = await supabase
+              .from('alamat_master')
+              .insert(alamatMasterDataWali)
+              .select('id')
+              .single();
+          alamatIdWali = alamatMasterResponseWali['id'];
+        }
       }
 
       final waliData = {
-        'nama_wali': _waliController.text.trim(),
+        'nama_wali': _waliController.text.trim().isEmpty
+            ? null
+            : _waliController.text.trim(),
         'nama_ayah': _ayahController.text.trim(),
         'nama_ibu': _ibuController.text.trim(),
-        'jalan': _alamatWaliJalanController.text.trim(),
-        'rt_rw': _alamatWaliRtRwController.text.trim(),
-        'dusun': _alamatWaliDusunController.text,
-        'desa': _alamatWaliDesaController.text,
-        'kecamatan': _alamatWaliKecamatanController.text,
-        'kabupaten': _alamatWaliKabupatenController.text,
-        'provinsi': _alamatWaliProvinsiController.text,
-        'kode_pos': _alamatWaliKodePosController.text,
+        'jalan': _alamatWaliJalanController.text.trim().isEmpty
+            ? null
+            : _alamatWaliJalanController.text.trim(),
+        'rt_rw': _alamatWaliRtRwController.text.trim().isEmpty
+            ? null
+            : _alamatWaliRtRwController.text.trim(),
+        'dusun': _alamatWaliDusunController.text.isEmpty
+            ? null
+            : _alamatWaliDusunController.text,
+        'desa': _alamatWaliDesaController.text.isEmpty
+            ? null
+            : _alamatWaliDesaController.text,
+        'kecamatan': _alamatWaliKecamatanController.text.isEmpty
+            ? null
+            : _alamatWaliKecamatanController.text,
+        'kabupaten': _alamatWaliKabupatenController.text.isEmpty
+            ? null
+            : _alamatWaliKabupatenController.text,
+        'provinsi': _alamatWaliProvinsiController.text.isEmpty
+            ? null
+            : _alamatWaliProvinsiController.text,
+        'kode_pos': _alamatWaliKodePosController.text.isEmpty
+            ? null
+            : _alamatWaliKodePosController.text,
         if (alamatIdWali != null) 'alamat_id': alamatIdWali,
       };
 
-      final waliResponse = await supabase
+      await supabase
           .from('wali')
-          .insert(waliData)
-          .select('id')
-          .single();
-      final waliId = waliResponse['id'];
+          .update(waliData)
+          .eq('id', widget.siswa['wali_id']);
 
       final ttl =
           '${_tempatLahirController.text.trim()}, ${_tanggalLahirController.text.trim()}';
@@ -398,17 +380,17 @@ class _FormPageState extends State<FormPage> {
         'kabupaten': _kabupatenController.text,
         'provinsi': _provinsiController.text,
         'kode_pos': _kodePosController.text,
-        'wali_id': waliId,
+        'wali_id': widget.siswa['wali_id'],
         if (alamatIdSiswa != null) 'alamat_id': alamatIdSiswa,
       };
 
-      await supabase.from('siswa').insert(data);
+      await supabase.from('siswa').update(data).eq('id', widget.siswa['id']);
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text(
-            'Data berhasil disimpan!',
-            style: TextStyle(
+          content: Text(
+            "Data siswa '${_namaController.text}' berhasil diperbarui",
+            style: const TextStyle(
               color: Colors.white,
               fontWeight: FontWeight.bold,
               fontSize: 15,
@@ -422,17 +404,15 @@ class _FormPageState extends State<FormPage> {
           duration: const Duration(seconds: 3),
         ),
       );
-      Navigator.pop(context);
+      Navigator.pop(context, true);
     } catch (e) {
-      String errorMessage = 'Gagal menyimpan data';
-      String lottieAsset = 'assets/animations/server_error.json';
+      String errorMessage = 'Gagal memperbarui data: $e';
       if (e is SocketException || e is TimeoutException) {
-        errorMessage = 'Gagal terhubung ke Supabase. Silakan periksa koneksi server.';
+        errorMessage =
+            'Gagal terhubung ke Supabase. Silakan periksa koneksi server.';
       }
-      _showErrorDialog(
-        title: 'Koneksi Supabase Gagal',
-        message: errorMessage,
-        lottieAsset: lottieAsset,
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(errorMessage), backgroundColor: Colors.red),
       );
     }
   }
@@ -547,7 +527,7 @@ class _FormPageState extends State<FormPage> {
       child: Scaffold(
         appBar: AppBar(
           title: Text(
-            'Form Data Siswa',
+            'Edit Data Siswa',
             style: GoogleFonts.poppins(
               fontSize: 20,
               fontWeight: FontWeight.w600,
@@ -570,7 +550,7 @@ class _FormPageState extends State<FormPage> {
                 vertical: 16,
               ),
               child: ConstrainedBox(
-                constraints: BoxConstraints(maxWidth: 600),
+                constraints: const BoxConstraints(maxWidth: 600),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
@@ -593,7 +573,7 @@ class _FormPageState extends State<FormPage> {
                           if (_currentStep < 2) {
                             setState(() => _currentStep++);
                           } else {
-                            _simpanData();
+                            _updateData();
                           }
                         },
                         onStepCancel: () {
@@ -759,23 +739,20 @@ class _FormPageState extends State<FormPage> {
                                             return DropdownMenuItem<String>(
                                               value: jk["label"] as String?,
                                               child: Row(
-                                                mainAxisSize: MainAxisSize
-                                                    .min, // Restrict the width to the minimum needed
+                                                mainAxisSize: MainAxisSize.min,
                                                 children: [
                                                   Icon(
                                                     jk["icon"] as IconData?,
                                                     color:
                                                         jk["color"] as Color?,
-                                                    size:
-                                                        16, // Reduce icon size to save space
+                                                    size: 16,
                                                   ),
                                                   const SizedBox(width: 8),
                                                   Flexible(
-                                                    // Wrap text to prevent overflow
                                                     child: Text(
                                                       jk["label"].toString(),
-                                                      overflow: TextOverflow
-                                                          .ellipsis, // Handle long text
+                                                      overflow:
+                                                          TextOverflow.ellipsis,
                                                     ),
                                                   ),
                                                 ],
@@ -802,29 +779,32 @@ class _FormPageState extends State<FormPage> {
                                       ),
                                       items:
                                           [
-                                            'Islam',
-                                            'Kristen',
-                                            'Katolik',
-                                            'Hindu',
-                                            'Budha',
-                                            'Konghucu',
-                                          ].map((a) {
-                                            return DropdownMenuItem<String>(
-                                              value: a,
-                                              child: Row(
-                                                mainAxisSize: MainAxisSize.min,
-                                                children: [
-                                                  Flexible(
-                                                    child: Text(
-                                                      a,
-                                                      overflow:
-                                                          TextOverflow.ellipsis,
-                                                    ),
+                                                'Islam',
+                                                'Kristen',
+                                                'Katolik',
+                                                'Hindu',
+                                                'Budha',
+                                                'Konghucu',
+                                              ]
+                                              .map(
+                                                (a) => DropdownMenuItem<String>(
+                                                  value: a,
+                                                  child: Row(
+                                                    mainAxisSize:
+                                                        MainAxisSize.min,
+                                                    children: [
+                                                      Flexible(
+                                                        child: Text(
+                                                          a,
+                                                          overflow: TextOverflow
+                                                              .ellipsis,
+                                                        ),
+                                                      ),
+                                                    ],
                                                   ),
-                                                ],
-                                              ),
-                                            );
-                                          }).toList(),
+                                                ),
+                                              )
+                                              .toList(),
                                       onChanged: (val) =>
                                           setState(() => _agama = val),
                                     ),
@@ -974,13 +954,15 @@ class _FormPageState extends State<FormPage> {
                                     ),
                                     const SizedBox(height: 12),
                                     Autocomplete<Map<String, dynamic>>(
+                                      initialValue: TextEditingValue(
+                                        text: _dusunController.text,
+                                      ),
                                       optionsBuilder:
                                           (TextEditingValue textEditingValue) {
                                             final input = textEditingValue.text
                                                 .toLowerCase();
-                                            if (input.isEmpty) {
+                                            if (input.isEmpty)
                                               return _dusunList;
-                                            }
                                             return _dusunList.where((d) {
                                               final dusun =
                                                   (d['dusun'] as String?)
@@ -998,10 +980,10 @@ class _FormPageState extends State<FormPage> {
                                             focusNode,
                                             onEditingComplete,
                                           ) {
-                                            _dusunController.text =
-                                                controller.text;
+                                            controller.text =
+                                                _dusunController.text;
                                             return TextField(
-                                              controller: _dusunController,
+                                              controller: controller,
                                               focusNode: focusNode,
                                               decoration: InputDecoration(
                                                 labelText: 'Dusun',
@@ -1016,8 +998,9 @@ class _FormPageState extends State<FormPage> {
                                                       BorderRadius.circular(12),
                                                 ),
                                               ),
-                                              onChanged: (value) =>
-                                                  controller.text = value,
+                                              onChanged: (value) {
+                                                _dusunController.text = value;
+                                              },
                                               onEditingComplete:
                                                   onEditingComplete,
                                             );
@@ -1298,13 +1281,15 @@ class _FormPageState extends State<FormPage> {
                                     ),
                                     const SizedBox(height: 12),
                                     Autocomplete<Map<String, dynamic>>(
+                                      initialValue: TextEditingValue(
+                                        text: _alamatWaliDusunController.text,
+                                      ),
                                       optionsBuilder:
                                           (TextEditingValue textEditingValue) {
                                             final input = textEditingValue.text
                                                 .toLowerCase();
-                                            if (input.isEmpty) {
+                                            if (input.isEmpty)
                                               return _dusunList;
-                                            }
                                             return _dusunList.where((d) {
                                               final dusun =
                                                   (d['dusun'] as String?)
@@ -1322,11 +1307,10 @@ class _FormPageState extends State<FormPage> {
                                             focusNode,
                                             onEditingComplete,
                                           ) {
-                                            _alamatWaliDusunController.text =
-                                                controller.text;
+                                            controller.text =
+                                                _alamatWaliDusunController.text;
                                             return TextField(
-                                              controller:
-                                                  _alamatWaliDusunController,
+                                              controller: controller,
                                               focusNode: focusNode,
                                               decoration: InputDecoration(
                                                 labelText: 'Dusun',
@@ -1341,8 +1325,11 @@ class _FormPageState extends State<FormPage> {
                                                       BorderRadius.circular(12),
                                                 ),
                                               ),
-                                              onChanged: (value) =>
-                                                  controller.text = value,
+                                              onChanged: (value) {
+                                                _alamatWaliDusunController
+                                                        .text =
+                                                    value;
+                                              },
                                               onEditingComplete:
                                                   onEditingComplete,
                                             );
